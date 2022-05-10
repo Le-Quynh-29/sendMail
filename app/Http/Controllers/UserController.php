@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -37,12 +40,21 @@ class UserController extends Controller
      */
     public function store(UserRequest $request)
     {
-        User::create([
+        $token = strtoupper(Str::random(10));
+        $user = User::create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
+            'token' => $token,
             'password' => Hash::make($request->get('password'))
         ]);
-        return view('success');
+        if ($user) {
+            Mail::send('emails.active_account', compact('user'), function ($email) use ($user) {
+                $email->subject('Hi - Xác nhận tài khoản');
+                $email->to($user->email, $user->name);
+            });
+        }
+
+        return redirect()->route('user.create')->with('success', 'Đăng ký thành công, vui lòng kiểm tra email để xác minh tài toàn');
     }
 
     /**

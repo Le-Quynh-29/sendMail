@@ -15,7 +15,7 @@ class UpdateUsersTable extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->tinyInteger('status')->after('email')->default(0);
-            $table->string('token', 20)->after('status');
+            $table->string('token', 20)->nullable()->after('status');
         });
     }
 
